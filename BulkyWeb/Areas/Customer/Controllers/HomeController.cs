@@ -2,8 +2,10 @@ using System.Diagnostics;
 using Bulky.DataAccess.Repository.Implement;
 using Bulky.DataAccess.Repository.Interface;
 using Bulky.Models.Models;
+using Bulky.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stripe;
 
 namespace BulkyWeb.Areas.Customer.Controllers
 {
@@ -21,7 +23,7 @@ namespace BulkyWeb.Areas.Customer.Controllers
 
 		public IActionResult Index()
 		{
-			IEnumerable<Product> productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
+			IEnumerable<Bulky.Models.Models.Product> productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
 			return View(productList);
 		}
 		public IActionResult Details(int productId)
@@ -56,15 +58,18 @@ namespace BulkyWeb.Areas.Customer.Controllers
 			{
 				// Shoping Cart already exists
 				cartFromDb.Count = cartFromDb.Count + shoppingCart.Count;
-				_unitOfWork.ShoppingCart.Update(cartFromDb); 
+				_unitOfWork.ShoppingCart.Update(cartFromDb);
+				_unitOfWork.Save();
 			}
 			else
 			{
 				// Add to Cart
 				_unitOfWork.ShoppingCart.Add(shoppingCart);
+				_unitOfWork.Save();
+				HttpContext.Session.SetInt32(SD.SessionCart,
+				_unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == userId).Count());
 			}
-			TempData["Success"] = "Cart updated successfully";
-			_unitOfWork.Save();
+			TempData["Success"] = "Cart updated successfully";			
 
 			return RedirectToAction(nameof(Index));
 		}

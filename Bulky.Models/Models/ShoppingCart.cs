@@ -24,7 +24,7 @@ namespace Bulky.Models.Models
 		public ApplicationUser ApplicationUser { get; set; }
 
 		[DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-		public DateTime CreatedAt { get; set; }
+		public DateTime CreatedAt { get; set; } = DateTime.Now;
 		[NotMapped]
 		public double Price { get; set; }
 	}

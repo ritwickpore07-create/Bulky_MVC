@@ -54,7 +54,12 @@ namespace BulkyWeb.Areas.Customer.Controllers
 				OrderHeader = new()
 			};
 
+			ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
 			ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
+			if (ShoppingCartVM.OrderHeader.ApplicationUser == null)
+			{
+				throw new Exception($"ApplicationUser not found for userId: {userId}");
+			}
 
 			ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.Name;
 			ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
@@ -110,7 +115,7 @@ namespace BulkyWeb.Areas.Customer.Controllers
 			_unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
 			_unitOfWork.Save();
 
-			foreach(var cartItem in ShoppingCartVM.ShoppingCartList)
+			foreach (var cartItem in ShoppingCartVM.ShoppingCartList)
 			{
 				OrderDetail orderDetail = new()
 				{
@@ -132,10 +137,45 @@ namespace BulkyWeb.Areas.Customer.Controllers
 			return RedirectToAction(nameof(OrderConfirmation), new { id = ShoppingCartVM.OrderHeader.Id });
 		}
 
+		//public IActionResult OrderConfirmation(int id)
+		//{
+		//	//OrderHeader orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties: "ApplicationUser");
+		//	//if(orderHeader.PaymentStatus != SD.PaymentStatusDelayedPayment)
+		//	//{
+		//	//	// This is an order by customer
+
+		//	//}
+		//	//HttpContext.Session.Clear();
+		//	//_unitOfWork.Save();
+		//	return View(id);
+		//}
+
 		public IActionResult OrderConfirmation(int id)
 		{
+			var orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties: "ApplicationUser");
+
+			if (orderHeader == null)
+			{
+				return NotFound();
+			}
+
+			// Clear cart only if it's a customer order (not delayed payment)
+			if (orderHeader.PaymentStatus != SD.PaymentStatusDelayedPayment)
+			{
+				var shoppingCarts = _unitOfWork.ShoppingCart.GetAll(
+					u => u.ApplicationUserId == orderHeader.ApplicationUserId
+				).ToList();
+
+				_unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+				_unitOfWork.Save();
+
+				// Clear session cart count
+				HttpContext.Session.SetInt32(SD.SessionCart, 0);
+			}
+
 			return View(id);
 		}
+
 
 		public IActionResult Plus(int cartId)
 		{
@@ -148,10 +188,12 @@ namespace BulkyWeb.Areas.Customer.Controllers
 
 		public IActionResult Minus(int cartId)
 		{
-			var cartItem = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId);
+			var cartItem = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId, tracked: true);
 			if (cartItem.Count <= 1)
 			{
 				// Remove the item from cart
+				HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll
+				(u => u.ApplicationUserId == cartItem.ApplicationUserId).Count() - 1);
 				_unitOfWork.ShoppingCart.Remove(cartItem);
 			}
 			else
@@ -165,7 +207,9 @@ namespace BulkyWeb.Areas.Customer.Controllers
 
 		public IActionResult Remove(int cartId)
 		{
-			var cartItem = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId);
+			var cartItem = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId, tracked: true);
+			HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll
+				(u => u.ApplicationUserId == cartItem.ApplicationUserId).Count() - 1);
 			_unitOfWork.ShoppingCart.Remove(cartItem);
 			_unitOfWork.Save();
 			return RedirectToAction(nameof(Index));
