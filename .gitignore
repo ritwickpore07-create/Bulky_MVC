@@ -361,4 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/BulkyWeb/appsettings.Development.json
+
+appsettings.Development.json
+/.gitignore
+/.gitignore
+/.gitignore
+/.gitignore
