@@ -32,11 +32,7 @@ namespace Bulky.DataAccess.Repository.Implement
 				objFromDb.Price100 = product.Price100;
 				objFromDb.ISBN = product.ISBN;
 				objFromDb.CategoryId = product.CategoryId;
-				//objFromDb.Category = product.Category;
-				if (product.ImageUrl != null)
-				{
-					objFromDb.ImageUrl = product.ImageUrl;
-				}
+				objFromDb.ProductImages = product.ProductImages;				
 			}
 		}
 	}

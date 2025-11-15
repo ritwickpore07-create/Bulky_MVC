@@ -89,7 +89,7 @@
 					</div>
 				</form>
 			</div>
-			@if(!User.IsInRole(SD.Role_Admin))
+			@if (!User.IsInRole(SD.Role_Admin))
 			{
 				<div class="col-md-12 p-3 text-center">
 					<section>
@@ -131,7 +131,9 @@
 </div>
 
 @section Scripts {
-	<partial name="_ValidationScriptsPartial" />
+	@{
+		<partial name="_ValidationScriptsPartial" />
+	}
 	<script>
 		$(document).ready(function () {
 			$('#registerForm select[name="Input.Role"]').on('change', function () {

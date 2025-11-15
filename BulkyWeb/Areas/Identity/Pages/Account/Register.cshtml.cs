@@ -131,10 +131,10 @@ namespace BulkyWeb.Areas.Identity.Pages.Account
 		{			
 			Input = new()
 			{
-				RoleList = _roleManager.Roles.Select(u => u.Name).Select(e => new SelectListItem
+				RoleList = _roleManager.Roles.Select(e => new SelectListItem
 				{
-					Text = e,
-					Value = e
+					Text = e.Name,
+					Value = e.Name
 				}),
 				CompanyList = _unitOfWork.Company.GetAll().Select(e => new SelectListItem
 				{

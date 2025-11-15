@@ -33,6 +33,12 @@ builder.Services.AddAuthentication()
 		options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
 	});
 
+builder.Services.AddAuthentication()
+	.AddMicrosoftAccount(options =>
+	{
+		options.ClientId = builder.Configuration["Authentication:Microsoft:ClientId"];
+		options.ClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"];
+	});
 
 builder.Services.AddDistributedMemoryCache();	
 builder.Services.AddSession(options =>

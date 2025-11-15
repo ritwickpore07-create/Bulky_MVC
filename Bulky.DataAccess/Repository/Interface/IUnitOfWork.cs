@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bulky.Models.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ namespace Bulky.DataAccess.Repository.Interface
 	{
 		ICategoryRepository Category { get; }
 		IProductRepository Product { get; }
+		IProductImageRepository ProductImage { get; }
 		ICompanyRepository Company { get; }
 		IOrderDetailRepository OrderDetail { get; }
 		IOrderHeaderRepository OrderHeader { get; }		
